@@ -1,0 +1,3 @@
+import mouseinfo 
+
+mouseinfo.mouseInfo()
