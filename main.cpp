@@ -5,8 +5,7 @@
 
 //TO_DO -
 	// Multithread for speed
-	// Get values
-	// Get time for function calls 
+	// Try to make program as fast as possible
 
 #include "LeagueProgramHeader.hpp" // Include header file
 //#pragma comment( lib, "gdi32" )
@@ -86,8 +85,9 @@ int main (void) {
 
 			object1.key_pressed = object1.cardSelector('b');
 			if (object1.key_pressed == true) {
-				cout << "blue selected!"; 
+				cout << "SUCCESS" << endl; 
 			} 
+
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -145,7 +145,7 @@ int main (void) {
 				object1.available = object1.abilityAvaiablity('w');
 				if (object1.available) {
 					
-					// Check for R repress 
+					// Check for R repress on come up !!! 
 
 					// Select gold card 
 					object1.key_pressed = object1.cardSelector('g');
@@ -196,3 +196,10 @@ int main (void) {
 
 	return 0;
 }
+
+
+
+
+
+
+
