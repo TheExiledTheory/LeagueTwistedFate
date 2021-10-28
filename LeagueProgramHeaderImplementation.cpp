@@ -24,7 +24,7 @@ void LeagueProgram::screenSize() {
 			cout << "MUST BE 1920x1080!" << endl;
 		}
 
-		cout << width << "x" << height << " is valid!" << endl;
+		cout << width << " x " << height << " is valid!" << endl;
 
   	} catch (const exception &e) {
 		cout << e.what() << endl;
@@ -147,6 +147,7 @@ bool LeagueProgram::cardSelector(const char card)  {
 	dc = GetDC(NULL);
 	// Verify device context
 	if (dc == NULL) {
+		ReleaseDC(NULL, dc);
 		return false;
 	}
 
@@ -166,20 +167,25 @@ bool LeagueProgram::cardSelector(const char card)  {
 	// Convert to hex
 	hex_color = rgb2hex(R, G, B); 
 
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		// OPTIMIZE = Rather than returning simply returning.... create a thread that halts and checks when button is avail then run ?___? //
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	// Initial check to make sure the ability is available 
 	if (hex_color != W_ABILITY_HEX && hex_color != BLUE_CARD_HEX && hex_color != GOLD_CARD_HEX && hex_color != RED_CARD_HEX) {
-		cout << "Current pixel hex value: [" << hex_color << "]" << endl; 
-		cout << "Expected pixel hex value: [" << W_ABILITY_HEX << "]" << endl;
-		cout << "W Available/Active: [";
-		(hex_color == W_ABILITY_HEX || hex_color == W_ABILITY_HEX) ? (cout << "yes]" << endl) : (cout << "no]" << endl);
-		cout << "W not ready! - no action taken" << endl; 
-		
+		cout << "The w ability is not avaialble! - no action taken!" << endl; 
 		ReleaseDC(NULL, dc);
 		return false; 
 	}
 
+	//while (hex_color != W_ABILITY_HEX && hex_color != BLUE_CARD_HEX && hex_color != GOLD_CARD_HEX && hex_color != RED_CARD_HEX) {
+	//	sleep(.2); 
+	//}
+
 	// While the card is chooseable 
 	while (hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX || hex_color == RED_CARD_HEX) {
-		cout << "In card selection pixel check loop " << endl;
+		cout << "The w ability is available! " << endl;
+		
 		// Get the current color of pixel 
 		color = GetPixel(dc, W_ABILITY_X, W_ABILITY_Y); 
 
@@ -188,58 +194,91 @@ bool LeagueProgram::cardSelector(const char card)  {
 		G = GetGValue(color);
 		B = GetBValue(color);
 
-		// OPTIMIZE = CHECK RGB rather than convert to hex 
+		/////////////////////////////////////////////////////////////////////////////////
+		// OPTIMIZE = CHECK RGB rather than convert to hex = might improve speed ?___? //
+		/////////////////////////////////////////////////////////////////////////////////
 
-		// Check Wx pixel and Wy pixel for W 
+		// Check color for card match 
 		switch (int_card) {
-			case 1: // Currently on blue card 
-				hex_color = rgb2hex(R, G, B); 
-				cout << "Current pixel in switch is : [" << hex_color << "]" << endl; 
-				//cout << "Expected pixel hex value: [" << W_ABILITY_HEX << "]" << endl;
-				//cout << "W Available/Active: [";
-				(hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX) ? (cout << "yes]" << endl) : (cout << "no]" << endl);
 
-				//cout << "**********HEX = " << hex_color << endl; 
+			case 1: // Blue card presence check 
+
+				// Evalaute pixel color 
+				hex_color = rgb2hex(R, G, B); 
+				cout << "Checking for blue card!" << endl; 
+
+				// Make sure the current card is Blue 
 				if (hex_color == BLUE_CARD_HEX ) {
-					cout << "Current pixel in BLUE CARD CHECK is : [" << hex_color << "]" << endl; 
+					cout << "Current card is Blue! [" << hex_color << "] vs [" << BLUE_CARD_HEX << "]" << endl; 
+					
 					// Press the W key 
 					vkey = 0x57; 
 					clickButton(vkey); 
-					cout << "BLUE! - w pressed!" << endl; 
+					cout << "BLUE chosen! - W pressed!" << endl; 
+
 					//clickButton(vkey);
 					ReleaseDC(NULL, dc);
 					return true;
+
 				} else {
 					cout << "Blue card not matched - w not pressed!" << endl;
-					sleep(1);
 					break;
 				}
-			case 2: // Currently on red card
+			case 2: // Red card presence check 
+
+				// Evalaute pixel color 
 				hex_color = rgb2hex(R, G, B); 
-				if (hex_color == RED_CARD_HEX) {
+				cout << "Checking for red card!" << endl; 
+
+				// Make sure the current card is Blue 
+				if (hex_color == RED_CARD_HEX ) {
+					cout << "Current card is Red! [" << hex_color << "] vs [" << RED_CARD_HEX << "]" << endl; 
+					
 					// Press the W key 
-					vkey = 0x52; 
+					vkey = 0x57; 
 					clickButton(vkey); 
+					cout << "RED chosen! - W pressed!" << endl; 
+
+					//clickButton(vkey);
+					ReleaseDC(NULL, dc);
+					return true;
+					
+				} else {
+					cout << "Red card not matched - w not pressed!" << endl;
+					break;
 				}
-				cout << "RED! - w pressed!" << endl; 
-				ReleaseDC(NULL, dc);
-				return true; 
-			case 3: // Currently on gold card
+			case 3: // Gold card presence check
+
+				// Evalaute pixel color 
 				hex_color = rgb2hex(R, G, B); 
-				if (hex_color == GOLD_CARD_HEX) {
+				cout << "Checking for gold card!" << endl; 
+
+				// Make sure the current card is Blue 
+				if (hex_color == GOLD_CARD_HEX ) {
+					cout << "Current card is Blue! [" << hex_color << "] vs [" << GOLD_CARD_HEX << "]" << endl; 
+					
 					// Press the W key 
-					vkey = 0x52; 
+					vkey = 0x57; 
 					clickButton(vkey); 
+
+					cout << "GOLD chosen! - W pressed!" << endl; 
+
+					//clickButton(vkey);
+					ReleaseDC(NULL, dc);
+					return true;
+					
+				} else {
+					cout << "Gold card not matched - w not pressed!" << endl;
+					break;
 				}
-				cout << "Gold! - w pressed!" << endl; 
-				ReleaseDC(NULL, dc);
-				return true; 
+
 			default: 
-				cout << "No match on card! swtch()" << endl;
+				cout << "Card not matched to a candidate - did you specify b/r/g ?" << endl;
 				break; 
 		}
 	}
-	cout << "Cannot selected a card :(" << endl; 
+	
+	cout << "End of cardSelector() reached ... this is not good :-(" << endl; 
 	ReleaseDC(NULL, dc);
 	return false; 
 } 
@@ -294,11 +333,11 @@ void LeagueProgram::clickButton(WORD vkey) {
 	// Once for press down 
 	SendInput(2, &input, sizeof(INPUT));		// This irritated the hell outta me. I tested for days and couldnt get this functionality to work until I changed from 1 to 2 
 	input.ki.dwFlags = KEYEVENTF_KEYUP;
-
+	sleep(.1);
 	// Again for release
 	SendInput(2, &input, sizeof(INPUT));
 	input.ki.dwFlags = KEYEVENTF_KEYUP;
-
+	sleep(.1);
 
 }
 

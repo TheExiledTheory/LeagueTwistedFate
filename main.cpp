@@ -20,8 +20,9 @@ int main (void) {
 	object1.key_pressed = false;
 
 	// Setup vars
-	clock_t start;
-	double duration;
+	//clock_t start;
+	WORD vkey;
+	//double duration;
 
 	cout << "Attempting to get screen dimensions." << endl;
 
@@ -34,6 +35,7 @@ int main (void) {
 	sleep(3);
 
 	cout << "READY!" << endl;
+	cout << "======================================" << endl; 
 
 	// While end key is not pressed
 	while (!(GetKeyState(35) & 0x8000)) {
@@ -50,147 +52,105 @@ int main (void) {
 		// The THE AVAILABILITY NEEDS TO BE CHECKED AT BUTTON DETECT 
 		//AND IT NEEDS TO CHECK FOR COLORS OTHER COLORS 
 
+		// FIX ENTER BUTTON DETECTION
 
 
-		sleep(.88); 
+		//sleep(.88); 
 
+		// Get key states 
 		int w_pressed = (GetKeyState(87) & 0x8000); 
+		int ctrl_pressed  = (GetKeyState(VK_CONTROL) & 0x8000);
+		int space_pressed = (GetKeyState(VK_SPACE) & 0x8000);
+		int r_pressed = (GetKeyState(82) & 0x8000);
+		int enter_pressed = (GetKeyState(VK_RETURN));
 
-/*
-		if (w_pressed) {
-			cout << "pressed " << w_pressed << endl;
-		} else {
-			cout << "not pressed " << w_pressed << endl;
-		}
-*/
 
-		// Detect W press
-		//if (GetKeyState(87) & 0x8000) {//& 0x8000) {
-		if (w_pressed != 0) {
+		//if (enter_pressed) {
+		//	cout << "pressed " << enter_pressed << endl;
+		//} else {
+		//	cout << "not pressed " << enter_pressed << endl;
+		//}
 
-			cout << "W press detected! \n Checking for availability! \n";
 
-			// Determine how fast functio runs 
+		// Detects W press (not including upgrades)
+		if (w_pressed != 0 && ctrl_pressed == 0) {
+
+			cout << "W press detected!\nChecking for availability!\n...\n...\n\n";
+
+			// Start a timer to check for function duration  
 			auto start_timer = std::chrono::high_resolution_clock::now();
 			
-			// Check W availability
-			//object1.available = object1.abilityAvaiablity('w');
-
-			// Call card selector(blue)
-			//if (object1.available == true) {
-
-				// Detect blue card and press w  
-		
-////////////////////////////////////////////////////////////////////////////
-
+			// Run primary detection work
 			object1.key_pressed = object1.cardSelector('b');
+			
+	
 			if (object1.key_pressed == true) {
-				cout << "SUCCESS" << endl; 
+				cout << "FINISHED!\nRe-entering ready state!" << endl; 
 			} 
 
-
-////////////////////////////////////////////////////////////////////////////
-
-				//cout << "key_pressed: " << object1.key_pressed << endl; 
-
-				//object1.available = false; 
-				//object1.key_pressed = false; 
-
-			//} else {
-			//	cout << "\n\n";
-				/*REMOVE ME COPY TO LOWER*/sleep(1); /*REMOVE ME COPY TO LOWER*/
-			//	continue;
-
-			//}
+			//sleep(1); 
 
 			// Determine execution time taken for calls 
 			auto stop_timer = std::chrono::high_resolution_clock::now(); 
 			auto timer = std::chrono::duration_cast<std::chrono::milliseconds>(stop_timer - start_timer); 
-			cout << "Execution time from button detect to finish: " << timer.count() << " miliseconds" << endl; 
+			cout << "Execution time: " << timer.count() << " milliseconds" << endl; 
+			//sleep(1); 
+		}
+
+
+
+		// Detects Space press (not including upgrades)
+		if (space_pressed != 0 && ctrl_pressed == 0) {
+
+			cout << "R press detected!\nChecking for availability!\n...\n...\n\n";
+
+			// Start a timer to check for function duration  
+			auto start_timer = std::chrono::high_resolution_clock::now();
 			
-			// Upon successful execution = may want to sleep to avoid recalling functions 
-			//sleep(5);
+			WORD vkey = 0x57;
+			// Click w 
+			object1.clickButton(vkey); 
+
+			// Run primary detection work
+			object1.key_pressed = object1.cardSelector('g');
+			
+			
+			if (object1.key_pressed == true) {
+				cout << "FINISHED!\nRe-entering ready state!" << endl; 
+			} 
+
+			//sleep(1); 
+
+			// Determine execution time taken for calls 
+			auto stop_timer = std::chrono::high_resolution_clock::now(); 
+			auto timer = std::chrono::duration_cast<std::chrono::milliseconds>(stop_timer - start_timer); 
+			cout << "Execution time: " << timer.count() << " milliseconds" << endl; 
+			//sleep(1); 
 		}
 
-/*
-		// Detect space press
-		if (GetKeyState(32) & 0x8000) {
 
-			// Check W availability
-			object1.available = object1.abilityAvaiablity('w');
-				
-			// Call card selector(blue)
-			if (object1.available) {
-
-				// Detect blue card and press w  
-				object1.key_pressed = object1.cardSelector('g');
-				object1.available = false; 
-				object1.key_pressed = false; 
-				
-			} else {
-				continue; 
-			}
-
-		}
-		// Detect R press
-		if (GetKeyState(82) & 0x8000) {
-
-			// Check R availability
-			object1.available = object1.abilityAvaiablity('g');
-			if (object1.available) {
-
-				object1.available = false; 
-
-				// Check W availability
-				object1.available = object1.abilityAvaiablity('w');
-				if (object1.available) {
-					
-					// Check for R repress on come up !!! 
-
-					// Select gold card 
-					object1.key_pressed = object1.cardSelector('g');
-					object1.available = false; 
-					object1.key_pressed = false; 
-
-				} else {
-					continue; 
-				}
-			} else {
-				continue; 
-			}
-		}
 
 		// Detect enter press (static state)
-		if (GetKeyState(13)) {					
+		//while (enter_pressed != 0) {					
 
+		//	enter_pressed = GetKeyState(VK_RETURN);
+		//	cout << "Waiting for re-press..." << endl;
 
-			// Setup timer
-			start = clock();
-
-			cout << "Chat function started! - Pause!" << endl;
-
-			// Wait for re-press
-			while (GetKeyState(13)) {
-
-				// Calculate duration
-				duration = clock() - start / (double) CLOCKS_PER_SEC;
-				cout << "Halted for: " << duration << endl;
-
-				try { // Pause thread
-					sleep(1);
-				} catch (const exception &e) {
-					cout << e.what() << endl;
-				}
-			}
-
-			cout << "Chat function ended! - Resume!" << endl;
-		}
-*/
-		// Check for alt+tab
-		//if (GetKeyState() && GetKeyState()) {
-		//	exit(); 
+		//	sleep(1);
 		//}
-	
+
+
+		// Detects r press (not including upgrades)
+		//if (r_pressed != 0 && ctrl_pressed == 0) {
+
+			// start a timer - 
+			// while loop if r repressed = gold 
+			// if r_pressed 
+		//}
+
+
+	//object1.available = false; 
+	//object1.key_pressed = false; 
 
 	}
 
