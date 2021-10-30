@@ -31,9 +31,10 @@ void LeagueProgram::screenSize() {
   	}
 }
 
-/*
-// Checks if W/R is avaialable to press 
-bool LeagueProgram::abilityAvaiablity(const char ability) {
+// This () was initially going to be used just to check w is clickable but I decided to implement that into the cardSelector()
+// This () is reserved just for checking if R is active 
+// Checks if R is active
+void LeagueProgram::abilityAvaiablity(bool *available) {
 	
 	int R;
 	int G;
@@ -44,84 +45,36 @@ bool LeagueProgram::abilityAvaiablity(const char ability) {
 
 	// Get device context
 	dc = GetDC(NULL);
-
 	// Verify device context
 	if (dc == NULL) {
-		return false;
+		*available = false; 
+	}
+	// Get the current color of pixel 
+	color = GetPixel(dc, R_ABILITY_X, R_ABILITY_Y); 
+
+	// Make sure color valid 
+	if (color == CLR_INVALID) {
+		ReleaseDC(NULL, dc);
+		*available = false; 
 	}
 
-	// Check for the ability 
-	if (ability == 'w') {
-		
-		// Get the current color of pixel 
-		color = GetPixel(dc, W_ABILITY_X, W_ABILITY_Y); 
+	// Set the colors for RGB
+	R = GetRValue(color);
+	G = GetGValue(color);
+	B = GetBValue(color);
 
-		// Make sure color valid 
-		if (color == CLR_INVALID) {
-			return false; 
-		}
+	// Convert to hex
+	hex_color = rgb2hex(R, G, B); 
 
-		// Set the colors for RGB
-		R = GetRValue(color);
-		G = GetGValue(color);
-		B = GetBValue(color);
-
-		// Convert to hex 
-		hex_color = rgb2hex(R, G, B); 
-
-		cout << "Current pixel hex value: [" << hex_color << "]" << endl; 
-		cout << "Expected pixel hex value: [" << W_ABILITY_HEX << "]" << endl;
-		cout << "W Available/Active: [";
-		(hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX) ? (cout << "yes]" << endl) : (cout << "no]" << endl);
-		
-		// Release device context 
+	// Compare current to expected
+	if (hex_color == R_ACTIVE_HEX) {
 		ReleaseDC(NULL, dc);
-
-		// Compare current to expected hex values - the card in game will be one of these if ready state 
-		if (hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX) {
-			return true;
-		} else {
-			return false; 
-		}
+		*available = true; 
 	} 
-	
-	// Check for the ability
-	if (ability == 'r') {
-
-		// Get the current color of pixel 
-		color = GetPixel(dc, R_ABILITY_X, R_ABILITY_Y); 
-
-		// Make sure color valid 
-		if (color == CLR_INVALID) {
-			return false; 
-		}
-
-		// Set the colors for RGB
-		R = GetRValue(color);
-		G = GetGValue(color);
-		B = GetBValue(color);
-
-		// Convert to hex
-		hex_color = rgb2hex(R, G, B); 
-
-		cout << "Current pixel hex value: [" << hex_color << "]" << endl; 
-		cout << "Expected pixel hex value: [" << R_ABILITY_HEX << "]" << endl;
-		cout << "R Available/Active: [";
-		(hex_color == R_ABILITY_HEX || hex_color == R_ACTIVE_HEX) ? (cout << "yes]" << endl) : (cout << "no]" << endl);
-		
-		// Release device context 
-		ReleaseDC(NULL, dc);
-
-		// Compare current to expected
-		if (hex_color == R_ABILITY_HEX || hex_color == R_ACTIVE_HEX) {
-			return true;
-		} else {
-			return false; 
-		}
-	} 
-	return false; 
+ReleaseDC(NULL, dc);
+*available = false; 
 }
-*/
+
 // Clicks W if a pixel color matches card 
 bool LeagueProgram::cardSelector(const char card)  {
 	
@@ -147,7 +100,6 @@ bool LeagueProgram::cardSelector(const char card)  {
 	dc = GetDC(NULL);
 	// Verify device context
 	if (dc == NULL) {
-		ReleaseDC(NULL, dc);
 		return false;
 	}
 
@@ -305,19 +257,15 @@ std::string LeagueProgram::rgb2hex(int r, int g, int b) {
 	return s; 
 }	
 
-
+//w = 0x57
+//r = 0x52
 // Function source https://stackoverflow.com/questions/22419038/how-to-use-sendinput-function-c/22419083#22419083
 // Virtual key codes https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 void LeagueProgram::clickButton(WORD vkey) {
-	
-	//w = 0x57
-	//r = 0x52
-	//cout << "Executing script!\n";
-	//system("script.exe");
-	//cout << "" << endl;	
 
 	// Setup virtual keyboard input structure
-	INPUT input;
+	//INPUT input = {};
+	INPUT input; 
 	input.type = INPUT_KEYBOARD;
 
 	// Hardware scan code for virtual key
@@ -331,13 +279,14 @@ void LeagueProgram::clickButton(WORD vkey) {
 
 	// Simulate press of button 
 	// Once for press down 
-	SendInput(2, &input, sizeof(INPUT));		// This irritated the hell outta me. I tested for days and couldnt get this functionality to work until I changed from 1 to 2 
+	sleep(.2);
+	SendInput(2, &input, sizeof(INPUT));		// I tested for days and couldnt get this functionality to work until I changed from 1 to 2 
 	input.ki.dwFlags = KEYEVENTF_KEYUP;
-	sleep(.1);
+	sleep(.2);
 	// Again for release
 	SendInput(2, &input, sizeof(INPUT));
 	input.ki.dwFlags = KEYEVENTF_KEYUP;
-	sleep(.1);
+	sleep(.2); 
 
 }
 
