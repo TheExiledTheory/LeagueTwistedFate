@@ -50,7 +50,7 @@ int main (void) {
 	loop: // JUMP LABEL 
 	// Make sure that ENTER is not toggled 
 	if (GetKeyState(VK_RETURN)) { 
-		cout << "Enter status: toggled!" << endl;
+		cout << "Enter status: 1 - toggled!" << endl;
 		
 		sleep(1);
 
@@ -63,7 +63,7 @@ int main (void) {
 		if (GetKeyState(VK_RETURN) != 0) {
 			goto loop; 
 		}
-		cout << "Enter status changed: " << std::boolalpha << (GetKeyState(VK_RETURN)) ? (cout << " un-toggled\n") : (cout << " toggled\n") << endl;
+		cout << "Enter status: " << (GetKeyState(VK_RETURN)) ? (cout << " - un-toggled\n") : (cout << " - toggled\n") << endl;
 	} 
 
 
@@ -82,7 +82,7 @@ int main (void) {
 		int r_pressed = (GetKeyState(82) & 0x8000);
 		int enter_pressed = (GetKeyState(VK_RETURN));
 
-/*
+
 		// Detects W press (not including upgrades)
 		if (w_pressed != 0 && ctrl_pressed == 0) {
 
@@ -91,8 +91,11 @@ int main (void) {
 			// Start a timer to check for function duration  
 			auto start_timer = std::chrono::high_resolution_clock::now();
 			
+			// Check if W first to avoid going into cardSelector() just to return 
+
+
 			// Run primary detection work
-			object1.key_pressed = object1.cardSelector('b');
+			//object1.key_pressed = object1.cardSelector('b');
 			
 	
 			if (object1.key_pressed == true) {
@@ -105,6 +108,7 @@ int main (void) {
 			cout << "Execution time: " << timer.count() << " milliseconds" << endl; 
 		}
 
+
 		// Detects Space press (not including upgrades)
 		if (space_pressed != 0 && ctrl_pressed == 0) {
 
@@ -113,13 +117,14 @@ int main (void) {
 			// Start a timer to check for function duration  
 			auto start_timer = std::chrono::high_resolution_clock::now();
 			
+			// Check if W first to avoid going into cardSelector() just to return
+
+			// Click w
 			WORD vkey = 0x57;
-			// Click w 
 			object1.clickButton(vkey); 
 
 			// Run primary detection work
 			object1.key_pressed = object1.cardSelector('g');
-			
 			
 			if (object1.key_pressed == true) {
 				cout << "FINISHED!\nRe-entering ready state!" << endl; 
@@ -135,8 +140,8 @@ int main (void) {
 		if (enter_pressed < 0 || enter_pressed == 1) {
 			cout << "Chat functionality engaged!" << endl; 
 
-			// Lambda function for thread 
-			auto waiter = [](int enter_pressed) {	// No need for capture list[=][&]    [capture clause] (parameters) -> return-type {body}
+			// Lambda function for halting thread  
+			auto waiter = [](int enter_pressed) {	// capture list[=][&]    [capture clause] (parameters) -> return-type {body}
 
 				do {
 					// Get an accurate status 
@@ -152,12 +157,12 @@ int main (void) {
 
 			cout << "Chat functionality disabled!" << endl;
 		} 
-*/
+
 		// Detects r press (not including upgrades)
 		if (r_pressed != 0 && ctrl_pressed == 0) {
 
 			// Create a seperate thread to check if available
-			std::thread thread_obj((LeagueProgram()));
+			std::thread thread_obj((LeagueProgram()));	// Used a thread in this instance to see if faster :-/ 
 			thread_obj.join();
 			
 			cout << "R is available?  " << boolalpha << LeagueProgram::r_available << endl;
@@ -173,46 +178,62 @@ int main (void) {
 				cout << "Timer started!" << endl;
 				
 				do {
-					// Check change to keystate 
+					// Detect a change in key state status 
 					r_pressed = (GetKeyState(82) & 0x8000);
 
 					// If r was repressed
 					if (r_pressed != 0) {
-						// Select gold 
-						//object1.cardSelector('g');
-						cout << "gold selected" << endl; 
+						
+						// Make sure that W is available to click 
+						object1.available = object1.abilityAvaiablity('w');
+						
+						// Verify that W is available
+						if (object1.available = true) {
+							cout << "W is available!" << endl; 
+
+							// Send W to start rotation 
+							vkey = 0x57;
+							object1.clickButton(vkey); 
+							cout << "W clicked!" << endl; 
+
+							// Match gold card 
+							object1.cardSelector('g');
+							cout << "Gold selected!" << endl;
+						} else {
+							cout << "W is not available! " << endl;
+							
+							// Create lambda thread to constantly check for w availability // 
+							// ??????????????????????????????????????????????????????????? //
+							// Create lambda thread to constantly check for w availability // 
+						}
 						sleep(1);
 						break;
 					}
-
+					
 					// Update countdown 
 					auto stop_timer = std::chrono::high_resolution_clock::now(); 
-					difference = std::chrono::duration_cast<std::chrono::duration<double>>(stop_timer - start_timer);
-					cout << difference.count() << endl; 
+					difference = chrono::duration_cast<chrono::duration<double>>(stop_timer - start_timer);
+					
+					cout << "R - timer: " << setprecision(2) << fixed << showpoint << difference.count() << "/10.0 seconds!" << endl; 
 
-				} while (difference.count() < 10.0); // NO LONGER THAN 10 SEC
+				} while (difference.count() < 10.0); // Could create a detatched thread here to constantly update color value // Replace this with checking ability availability! 
 
 			} else {
-				cout << "Ultimate not active - nothing to do!" << endl; 
+				cout << "Ultimate not activated :(" << endl; 
 			}
 		}
 
+		// Reset all flags 
 		object1.available = false;
 		object1.key_pressed = false; 
 		LeagueProgram::r_available = false;
 	}
+
 	// Free allocated memory 
 	//delete league; 
 
 	return 0;
 }
-
-
-
-
-
-			// CARD SELECTOR 
-			// WAITING FOR AVAILABILITY 
 
 /*
 		Debug for testing key input 

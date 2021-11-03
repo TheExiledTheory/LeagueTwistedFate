@@ -24,6 +24,7 @@
 #include <winable.h>
 #include <thread> 
 #include <future>
+#include <iomanip> 
 
 #define W_ABILITY_HEX "#9e7026" 	
 
@@ -54,8 +55,8 @@ class LeagueProgram {
 		// Function definitions 
 		LeagueProgram(); 					// Explicit Constructor
 		void screenSize(); 					// Check for 1920x1080 resolution
-		bool abilityAvaiablity(); 			// Checks R ability availability
-		bool cardSelector(const char); 		// Selects card 
+		bool abilityAvaiablity(const char); // Checks R ability availability
+		bool cardSelector(const char); 		// Selects card based on pixel color 
 		std::string rgb2hex(int, int, int); // Changes RGB value to hex 
 		void clickButton(WORD); 			// Simulates key press
 		void operator () (); 				// Overload the () operator

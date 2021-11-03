@@ -34,13 +34,14 @@ void LeagueProgram::screenSize() {
 // Command funciton for thread callable object 
 // Overloading operator () to call class method 
 void LeagueProgram::operator () () {
-	r_available = abilityAvaiablity(); 
+	// Check if R is activated 
+	r_available = abilityAvaiablity('r'); 
 }
 
 
 // This () was initially going to be used just to check w is clickable but I decided to implement that into the cardSelector()
 // This () is reserved just for checking if R is active 
-bool LeagueProgram::abilityAvaiablity() {
+bool LeagueProgram::abilityAvaiablity(const char card) {
 	int R;
 	int G;
 	int B;
@@ -54,35 +55,65 @@ bool LeagueProgram::abilityAvaiablity() {
 	if (dc == NULL) {
 		return false; 
 	}
-	// Get the current color of pixel 
-	color = GetPixel(dc, R_ABILITY_X, R_ABILITY_Y); 
 
-	// Make sure color valid 
-	if (color == CLR_INVALID) {
-		ReleaseDC(NULL, dc);
-		return false; 
+	// Check if R is available or "active"
+	if (card == 'r') {
+		
+		// Get the current color of pixel 
+		color = GetPixel(dc, R_ABILITY_X, R_ABILITY_Y); 
+
+		// Make sure color valid 
+		if (color == CLR_INVALID) {
+			ReleaseDC(NULL, dc);
+			return false; 
+		}
+
+		// Set the colors for RGB
+		R = GetRValue(color);
+		G = GetGValue(color);
+		B = GetBValue(color);
+
+		// Convert to hex
+		hex_color = rgb2hex(R, G, B); 
+
+		// Compare current to expected
+		if (hex_color == R_ACTIVE_HEX) {
+			ReleaseDC(NULL, dc); 
+			return true;
+		} 
 	}
 
-	// Set the colors for RGB
-	R = GetRValue(color);
-	G = GetGValue(color);
-	B = GetBValue(color);
+	// Check if W is available to click 
+	if (card == 'w') {
+		
+		// Get the current color of pixel 
+		color = GetPixel(dc, W_ABILITY_X, W_ABILITY_Y); 
 
-	// Convert to hex
-	hex_color = rgb2hex(R, G, B); 
+		// Make sure color valid 
+		if (color == CLR_INVALID) {
+			ReleaseDC(NULL, dc);
+			return false; 
+		}
 
+		// Set the colors for RGB
+		R = GetRValue(color);
+		G = GetGValue(color);
+		B = GetBValue(color);
 
-	// Compare current to expected
-	if (hex_color == R_ACTIVE_HEX) {
-		ReleaseDC(NULL, dc); 
-		return true;
-	} 
+		// Convert to hex
+		hex_color = rgb2hex(R, G, B); 
 
+		// Compare current to expected
+		if (hex_color == W_ABILITY_HEX) {
+			ReleaseDC(NULL, dc); 
+			return true;
+		} 
+	}
 ReleaseDC(NULL, dc);
 return false; 
 }
 
-// Clicks W if a pixel color matches card 
+// Reclicks W once a pixel color is matched to a known card
 bool LeagueProgram::cardSelector(const char card)  {
 	
 	int R;
@@ -126,20 +157,18 @@ bool LeagueProgram::cardSelector(const char card)  {
 	// Convert to hex
 	hex_color = rgb2hex(R, G, B); 
 
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		// OPTIMIZE = Rather than returning simply returning.... create a thread that halts and checks when button is avail then run ?___? //
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 	// Initial check to make sure the ability is available 
 	if (hex_color != W_ABILITY_HEX && hex_color != BLUE_CARD_HEX && hex_color != GOLD_CARD_HEX && hex_color != RED_CARD_HEX) {
 		cout << "The w ability is not avaialble! - no action taken!" << endl; 
+
+		// Create lambda thread to constantly check for card availability // 
+		// ?????????????????????????????????????????????????????????????? //
+		// Create lambda thread to constantly check for card availability // 
+
+
 		ReleaseDC(NULL, dc);
 		return false; 
 	}
-
-	//while (hex_color != W_ABILITY_HEX && hex_color != BLUE_CARD_HEX && hex_color != GOLD_CARD_HEX && hex_color != RED_CARD_HEX) {
-	//	sleep(.2); 
-	//}
 
 	// While the card is chooseable 
 	while (hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX || hex_color == RED_CARD_HEX) {
@@ -153,10 +182,6 @@ bool LeagueProgram::cardSelector(const char card)  {
 		G = GetGValue(color);
 		B = GetBValue(color);
 
-		/////////////////////////////////////////////////////////////////////////////////
-		// OPTIMIZE = CHECK RGB rather than convert to hex = might improve speed ?___? //
-		/////////////////////////////////////////////////////////////////////////////////
-
 		// Check color for card match 
 		switch (int_card) {
 
@@ -167,8 +192,8 @@ bool LeagueProgram::cardSelector(const char card)  {
 				cout << "Checking for blue card!" << endl; 
 
 				// Make sure the current card is Blue 
-				if (hex_color == BLUE_CARD_HEX ) {
-					cout << "Current card is Blue! [" << hex_color << "] vs [" << BLUE_CARD_HEX << "]" << endl; 
+				if (hex_color == BLUE_CARD_HEX) {
+					cout << "Current card hex color: [" << hex_color << "] lue card expected hex: [" << BLUE_CARD_HEX << "]" << endl; 
 					
 					// Press the W key 
 					vkey = 0x57; 
@@ -191,7 +216,7 @@ bool LeagueProgram::cardSelector(const char card)  {
 
 				// Make sure the current card is Blue 
 				if (hex_color == RED_CARD_HEX ) {
-					cout << "Current card is Red! [" << hex_color << "] vs [" << RED_CARD_HEX << "]" << endl; 
+					cout << "Current card hex color: [" << hex_color << "] lue card expected hex: [" << RED_CARD_HEX << "]" << endl; 
 					
 					// Press the W key 
 					vkey = 0x57; 
@@ -214,7 +239,7 @@ bool LeagueProgram::cardSelector(const char card)  {
 
 				// Make sure the current card is Blue 
 				if (hex_color == GOLD_CARD_HEX ) {
-					cout << "Current card is Blue! [" << hex_color << "] vs [" << GOLD_CARD_HEX << "]" << endl; 
+					cout << "Current card hex color: [" << hex_color << "] lue card expected hex: [" << GOLD_CARD_HEX << "]" << endl; 
 					
 					// Press the W key 
 					vkey = 0x57; 
