@@ -1,7 +1,8 @@
 // Header file implementation "LeagueProgramHeaderImplementation.cpp"
 
-#include "LeagueProgramHeader.hpp"	// Include header file
-
+// Include header file 
+#include "LeagueProgramHeader.hpp"	
+// Set namespace
 using namespace std;
 
 // Constructor
@@ -173,7 +174,7 @@ bool LeagueProgram::cardSelector(const char card)  {
 	// While the card is chooseable 
 	while (hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX || hex_color == RED_CARD_HEX) {
 		cout << "The w ability is available! " << endl;
-		
+		cout << "Current card hex color: [" << hex_color << "]" << endl; 
 		// Get the current color of pixel 
 		color = GetPixel(dc, W_ABILITY_X, W_ABILITY_Y); 
 

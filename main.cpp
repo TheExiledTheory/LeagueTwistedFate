@@ -1,6 +1,6 @@
 // Main file for functional logic "main.cpp"
-// Run - g++ main.cpp LeagueProgramHeaderImplementation.cpp -lgdi32 
-// Run - a.exe
+// Compile - g++ main.cpp LeagueProgramHeaderImplementation.cpp -lgdi32 
+// Run - .\a.exe
 
 
 /*
@@ -81,7 +81,7 @@ int main (void) {
 		int space_pressed = (GetKeyState(VK_SPACE) & 0x8000);
 		int r_pressed = (GetKeyState(82) & 0x8000);
 		int enter_pressed = (GetKeyState(VK_RETURN));
-
+/*
 
 		// Detects W press (not including upgrades)
 		if (w_pressed != 0 && ctrl_pressed == 0) {
@@ -95,7 +95,7 @@ int main (void) {
 
 
 			// Run primary detection work
-			//object1.key_pressed = object1.cardSelector('b');
+			object1.key_pressed = object1.cardSelector('b');
 			
 	
 			if (object1.key_pressed == true) {
@@ -157,7 +157,7 @@ int main (void) {
 
 			cout << "Chat functionality disabled!" << endl;
 		} 
-
+*/
 		// Detects r press (not including upgrades)
 		if (r_pressed != 0 && ctrl_pressed == 0) {
 
@@ -170,7 +170,7 @@ int main (void) {
 			// The ability is active! 
 			if (LeagueProgram::r_available == true) {
 
-				sleep(1); // This is essential as if not here, the program will completely skip over the r repress check 
+				//sleep(1); // This is essential as if not here, the program will completely skip over the r repress check 
 
 				// 	Start a time for max of 10 seconds
 				auto start_timer = std::chrono::high_resolution_clock::now(); 
@@ -201,7 +201,7 @@ int main (void) {
 							cout << "Gold selected!" << endl;
 						} else {
 							cout << "W is not available! " << endl;
-							
+
 							// Create lambda thread to constantly check for w availability // 
 							// ??????????????????????????????????????????????????????????? //
 							// Create lambda thread to constantly check for w availability // 
