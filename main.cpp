@@ -1,26 +1,43 @@
 // Main file for functional logic "main.cpp"
-// Run - g++ main.cpp LeagueProgramHeaderImplementation.cpp -lgdi32 -std=c++14 -pthread
+// Run - g++ main.cpp LeagueProgramHeaderImplementation.cpp -lgdi32 
 // Run - a.exe
 
 
 /*
-Try to make the program as fast as possible
-
-TF cards switch about every 1.55 seconds so as long as the script executes within that time frame there shouldnt be a problem 
-
+Try to make the program as fast as possible!
+TF cards switch about every 1.55sec
 There is currently a known bug - when using clickButton() this (UNDER CERTAIN INSTANCES) cause the screen to cut out for some reason. 
-I am not sure the exact reason behind this but there are several possible solutions online but to I tested to no avail 
+I am almost positive that the implementation of sendInput() is causing Windows to enter power saver/sleep screen UNLESS THE MOUSE IS MOVING 
 
 */
 
-#include "LeagueProgramHeader.hpp" // Include header file
-
+// Include header file
+#include "LeagueProgramHeader.hpp" 		
+// Set namespace
 using namespace std;
+// Instanciate static class member 
+bool LeagueProgram::r_available = false; 
+
+// Altered cardSelector() directly taregeted at combatting a display bug
+void untoggle(WORD vkey) {
+
+	// Setup virtual keyboard input structure
+	INPUT input[2] = { 0 };
+
+	// Set the input structure to type keyboard
+	input[0].type = input[1].type = INPUT_KEYBOARD;
+	input[0].ki.wVk = input[1].ki.wVk = VkKeyScanA(vkey);
+	
+	// Set the key flag and send event 
+	input[1].ki.dwFlags = KEYEVENTF_KEYUP;
+	SendInput(2, input, sizeof(INPUT));
+}
 
 int main (void) {
 
 	// Setup object 
-	LeagueProgram object1;
+	//LeagueProgram *league = new LeagueProgram;	// Using free store -> heap allocation 
+	LeagueProgram object1;						// Using local vars -> stack allocation 
 	object1.available = false; 
 	object1.key_pressed = false;
 	WORD vkey;
@@ -29,54 +46,41 @@ int main (void) {
 	cout << "Attempting to get screen dimensions." << endl;
 	object1.screenSize();
 
-/*
-There is a bug with the following code - When 
-There are several things you can try but I am unsure which would work at the moment 
-ZeroMemory(&input,sizeof(input));
 
-
-
-	// Make sure that Enter key is not toggled before starting 
 	loop: // JUMP LABEL 
-
 	// Make sure that ENTER is not toggled 
-	if (GetKeyState(VK_RETURN) == 1 || GetKeyState(VK_RETURN) < 0) { 
-		vkey = 0x0D; 
-		sleep(1); 
-		object1.clickButton(vkey); 
-		sleep(1); 
+	if (GetKeyState(VK_RETURN)) { 
+		cout << "Enter status: toggled!" << endl;
+		
+		sleep(1);
+
+		vkey = VK_RETURN;
+		untoggle(vkey); 
+
+		sleep(1);
 
 		// Make sure that it is untoggled 
 		if (GetKeyState(VK_RETURN) != 0) {
 			goto loop; 
 		}
+		cout << "Enter status changed: " << std::boolalpha << (GetKeyState(VK_RETURN)) ? (cout << " un-toggled\n") : (cout << " toggled\n") << endl;
 	} 
-*/
+
 
 	cout << "Beginning in 3 seconds." << endl;
 	sleep(3);
-
 	cout << "READY AND WAITING!" << endl;
-	cout << "======================================" << endl; 
-
-	// Pressing end key will terminate 
+	cout << "======================================" << endl;  
+	
+	// Run until END key pressed
 	while (!(GetKeyState(35) & 0x8000)) {
 
-		// Request Win32 for keystates 
+		// Request Win32 for keystates every loop 
 		int w_pressed = (GetKeyState(87) & 0x8000); 
 		int ctrl_pressed  = (GetKeyState(VK_CONTROL) & 0x8000);
 		int space_pressed = (GetKeyState(VK_SPACE) & 0x8000);
 		int r_pressed = (GetKeyState(82) & 0x8000);
 		int enter_pressed = (GetKeyState(VK_RETURN));
-
-/*
-		if (enter_pressed < 0 || enter_pressed == 1) {
-			cout << "Active enter ! " << enter_pressed << endl;
-		} else {
-			cout << "Inactive enter ! " << enter_pressed << endl;
-		}
-		sleep(1); 
-*/
 
 /*
 		// Detects W press (not including upgrades)
@@ -151,19 +155,23 @@ ZeroMemory(&input,sizeof(input));
 */
 		// Detects r press (not including upgrades)
 		if (r_pressed != 0 && ctrl_pressed == 0) {
+
+			// Create a seperate thread to check if available
+			std::thread thread_obj((LeagueProgram()));
+			thread_obj.join();
 			
-			// Create a thread to check if available 
-			//thread thread_obj = thread(LeagueProgram::abilityAvaiablity, object1.available); 
-			//thread_obj.join(); 
+			cout << "R is available?  " << boolalpha << LeagueProgram::r_available << endl;
 
 			// The ability is active! 
-			if (object1.available == true) {
-				// Reset key state  
-				r_pressed = 0;
+			if (LeagueProgram::r_available == true) {
+
+				sleep(1); // This is essential as if not here, the program will completely skip over the r repress check 
 
 				// 	Start a time for max of 10 seconds
 				auto start_timer = std::chrono::high_resolution_clock::now(); 
 				std::chrono::duration<double> difference;
+				cout << "Timer started!" << endl;
+				
 				do {
 					// Check change to keystate 
 					r_pressed = (GetKeyState(82) & 0x8000);
@@ -171,14 +179,16 @@ ZeroMemory(&input,sizeof(input));
 					// If r was repressed
 					if (r_pressed != 0) {
 						// Select gold 
-						object1.cardSelector('g');
+						//object1.cardSelector('g');
+						cout << "gold selected" << endl; 
+						sleep(1);
 						break;
 					}
 
 					// Update countdown 
 					auto stop_timer = std::chrono::high_resolution_clock::now(); 
 					difference = std::chrono::duration_cast<std::chrono::duration<double>>(stop_timer - start_timer);
-
+					cout << difference.count() << endl; 
 
 				} while (difference.count() < 10.0); // NO LONGER THAN 10 SEC
 
@@ -189,12 +199,33 @@ ZeroMemory(&input,sizeof(input));
 
 		object1.available = false;
 		object1.key_pressed = false; 
+		LeagueProgram::r_available = false;
 	}
+	// Free allocated memory 
+	//delete league; 
+
 	return 0;
 }
 
 
 
+
+
+			// CARD SELECTOR 
+			// WAITING FOR AVAILABILITY 
+
+/*
+		Debug for testing key input 
+		if (r_pressed == 0) {
+			cout << "Inactive! " << r_pressed << endl;
+		} else if (r_pressed == 1) {
+			cout << "Active! " << r_pressed << endl;
+		} else {
+			cout << "Unknown! " << r_pressed << endl;
+		}
+		sleep(1); 
+
+*/
 
 
 

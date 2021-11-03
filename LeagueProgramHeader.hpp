@@ -23,11 +23,12 @@
 #include <sstream>
 #include <winable.h>
 #include <thread> 
+#include <future>
 
 #define W_ABILITY_HEX "#9e7026" 	
 
 #define R_ABILITY_HEX "#f48f10" 
-#define R_ACTIVE_HEX "#83723ew"		
+#define R_ACTIVE_HEX "#83723e"		
 
 #define BLUE_CARD_HEX "#3539ac"		
 #define GOLD_CARD_HEX "#7b5d04"		
@@ -46,16 +47,18 @@
 class LeagueProgram {
 	//private:
 	public:
+		static bool r_available; 			// Created to account for thread reference compiler error 
+		bool available; 					// Ability availability
+		bool key_pressed; 					// Ability key pressed
 
-		bool available; 
-		bool key_pressed; 
-
-		LeagueProgram(); // Constructor
-		void screenSize(); // Check for 1920x1080 resolution
-		void abilityAvaiablity(bool *); // Checks ability option 
-		bool cardSelector(const char); // Selects card 
+		// Function definitions 
+		LeagueProgram(); 					// Explicit Constructor
+		void screenSize(); 					// Check for 1920x1080 resolution
+		bool abilityAvaiablity(); 			// Checks R ability availability
+		bool cardSelector(const char); 		// Selects card 
 		std::string rgb2hex(int, int, int); // Changes RGB value to hex 
-		void clickButton(WORD); // Simulates key press 
+		void clickButton(WORD); 			// Simulates key press
+		void operator () (); 				// Overload the () operator
 };
 #endif
 

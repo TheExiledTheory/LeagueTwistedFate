@@ -11,7 +11,6 @@ LeagueProgram::LeagueProgram(){};
 void LeagueProgram::screenSize() {
 
 	try {
-
 		// Get screen dimentions
 		int height = GetSystemMetrics(SM_CYSCREEN);
 		int width = GetSystemMetrics(SM_CXSCREEN);
@@ -19,23 +18,29 @@ void LeagueProgram::screenSize() {
 		// Verify the height and width are proper
 		if (height != 1080 && width != 1920) {
 
-			cout << "CANNOT CONTINUE!" << endl;
+			cout << "CANNOT CONTINUE! ";
 			cout << width << "x" << height << endl;
 			cout << "MUST BE 1920x1080!" << endl;
+			exit(0); 
 		}
-
 		cout << width << " x " << height << " is valid!" << endl;
-
+		
   	} catch (const exception &e) {
 		cout << e.what() << endl;
   	}
 }
 
+
+// Command funciton for thread callable object 
+// Overloading operator () to call class method 
+void LeagueProgram::operator () () {
+	r_available = abilityAvaiablity(); 
+}
+
+
 // This () was initially going to be used just to check w is clickable but I decided to implement that into the cardSelector()
 // This () is reserved just for checking if R is active 
-// Checks if R is active
-void LeagueProgram::abilityAvaiablity(bool *available) {
-	
+bool LeagueProgram::abilityAvaiablity() {
 	int R;
 	int G;
 	int B;
@@ -47,7 +52,7 @@ void LeagueProgram::abilityAvaiablity(bool *available) {
 	dc = GetDC(NULL);
 	// Verify device context
 	if (dc == NULL) {
-		*available = false; 
+		return false; 
 	}
 	// Get the current color of pixel 
 	color = GetPixel(dc, R_ABILITY_X, R_ABILITY_Y); 
@@ -55,7 +60,7 @@ void LeagueProgram::abilityAvaiablity(bool *available) {
 	// Make sure color valid 
 	if (color == CLR_INVALID) {
 		ReleaseDC(NULL, dc);
-		*available = false; 
+		return false; 
 	}
 
 	// Set the colors for RGB
@@ -66,13 +71,15 @@ void LeagueProgram::abilityAvaiablity(bool *available) {
 	// Convert to hex
 	hex_color = rgb2hex(R, G, B); 
 
+
 	// Compare current to expected
 	if (hex_color == R_ACTIVE_HEX) {
-		ReleaseDC(NULL, dc);
-		*available = true; 
+		ReleaseDC(NULL, dc); 
+		return true;
 	} 
+
 ReleaseDC(NULL, dc);
-*available = false; 
+return false; 
 }
 
 // Clicks W if a pixel color matches card 
@@ -256,6 +263,7 @@ std::string LeagueProgram::rgb2hex(int r, int g, int b) {
 	}
 	return s; 
 }	
+
 
 //w = 0x57
 //r = 0x52
