@@ -2,10 +2,9 @@
 // Compile - g++ main.cpp LeagueProgramHeaderImplementation.cpp -lgdi32 
 // Run - .\a.exe
 
-
 /*
-There is currently a known bug - when using clickButton() this (UNDER CERTAIN INSTANCES) cause the screen to cut out for some reason. 
-I am almost positive that the implementation of sendInput() is causing Windows to enter power saver/sleep screen UNLESS THE MOUSE IS MOVING 
+EXTRA: 
+Have a detach detatched thread that detects if mouse not moved for 1min 50sec - moves mouse and sents inputs to the game to avoid AFK 
 */
 
 // Include header file
@@ -19,7 +18,7 @@ bool LeagueProgram::r_available = false;
 void untoggle(WORD vkey) {
 
 	// Setup virtual keyboard input structure
-	INPUT input[2] = { 0 };
+	INPUT input[2] = {0};
 
 	// Set the input structure to type keyboard
 	input[0].type = input[1].type = INPUT_KEYBOARD;
@@ -32,9 +31,12 @@ void untoggle(WORD vkey) {
 
 int main (void) {
 
-	// Setup object 
-	//LeagueProgram *league = new LeagueProgram;	// Using free store -> heap allocation 
-	LeagueProgram object1;						// Using local vars -> stack allocation 
+	int w_pressed; 
+	int ctrl_pressed;
+	int space_pressed;
+	int r_pressed; 
+	int enter_pressed;
+	LeagueProgram object1;	// Using local vars -> stack allocation  //LeagueProgram *league = new LeagueProgram;  // Using free memory-> heap allocation 
 	object1.available = false; 
 	object1.key_pressed = false;
 	WORD vkey;
@@ -88,15 +90,22 @@ int main (void) {
 			auto start_timer = std::chrono::high_resolution_clock::now();
 			
 			// Check if W first to avoid going into cardSelector() just to return 
+			object1.available = object1.abilityAvaiablity('w'); 
 
-
-			// Run primary detection work
-			object1.key_pressed = object1.cardSelector('b');
-			
-	
-			if (object1.key_pressed == true) {
-				cout << "FINISHED!\nRe-entering ready state!" << endl; 
-			} 
+			if (object1.available) {
+				cout << "W is available!\n";
+				object1.key_pressed = object1.cardSelector('b');
+				
+				if (object1.key_pressed) {
+					cout << "W key pressed!\n";
+					object1.key_pressed = false;
+					object1.available = false;
+					cout << "FINISHED!\nRe-entering ready state!" << endl; 
+					sleep(1);
+				}
+			} else {
+				cout << "W is not available!\n";
+			}
 
 			// Determine execution time taken for calls 
 			auto stop_timer = std::chrono::high_resolution_clock::now(); 
@@ -115,17 +124,28 @@ int main (void) {
 			auto start_timer = std::chrono::high_resolution_clock::now();
 			
 			// Check if W first to avoid going into cardSelector() just to return
+			object1.available = object1.abilityAvaiablity('w');
 
-			// Click w
-			WORD vkey = 0x57;
-			object1.clickButton(vkey); 
+			if (object1.available) {
+				cout << "R is available!\n";
 
-			// Run primary detection work
-			object1.key_pressed = object1.cardSelector('g');
-			
-			if (object1.key_pressed == true) {
-				cout << "FINISHED!\nRe-entering ready state!" << endl; 
-			} 
+				// Click w
+				WORD vkey = 0x57;
+				object1.clickButton(vkey); 
+
+				// Run primary detection work
+				object1.key_pressed = object1.cardSelector('g');
+				
+				if (object1.key_pressed == true) {
+					cout << "FINISHED!\nRe-entering ready state!" << endl; 
+					object1.key_pressed = false;
+					object1.available = false;
+					sleep(1);
+				} 
+			} else {
+				cout << "R is not available!\n";
+			}
+
 
 			// Determine execution time taken for calls 
 			auto stop_timer = std::chrono::high_resolution_clock::now(); 
@@ -203,14 +223,19 @@ int main (void) {
 							cout << "W clicked!" << endl; 
 
 							// Match gold card 
-							object1.cardSelector('g');
+							object1.key_pressed = object1.cardSelector('g');
 							cout << "Gold selected!" << endl;
+
+							object1.key_pressed = false;
+							object1.available = false;
+
+							sleep(1); 
 						} else {
 							cout << "W is not available! " << endl;
 
 							// Create lambda thread to constantly check for w availability // 
-							// ??????????????????????????????????????????????????????????? //
-							// Create lambda thread to constantly check for w availability // 
+							
+
 						}
 						sleep(1);
 						break;
@@ -219,12 +244,11 @@ int main (void) {
 					// Update countdown 
 					auto stop_timer = std::chrono::high_resolution_clock::now(); 
 					difference = chrono::duration_cast<chrono::duration<double>>(stop_timer - start_timer);
-
 					cout << "R - timer: " << setprecision(2) << fixed << showpoint << difference.count() << "/10.0 seconds!" << endl; 
 					
-
-
-				} while (difference.count() < 10.0); // Could create a detatched thread here to constantly update color value // Replace this with checking ability availability! 
+				} while (difference.count() < 10.0); // Could create a detatched thread here to constantly update color value 
+													 // Replace this with checking ability availability!
+													 // That way the timer works dynamically rather than statically  
 
 			} else {
 				cout << "Ultimate not active - nothing to do " << endl; 
@@ -243,13 +267,3 @@ int main (void) {
 
 	return 0;
 }
-
-/*
-Fix clickbutton function 
-Check card availability before selecting! 
-Add function to simulate presses and mouse movement for afk 2 minutes 
-*/
-
-
-
-
