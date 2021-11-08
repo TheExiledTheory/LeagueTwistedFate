@@ -26,15 +26,19 @@
 #include <future>
 #include <iomanip> 
 
+// Ability base hex values 
 #define W_ABILITY_HEX "#9e7026" 	
-
 #define R_ABILITY_HEX "#f48f10" 
 #define R_ACTIVE_HEX "#83723e"		
 
+// Card base hex values
 #define BLUE_CARD_HEX "#3539ac"		
 #define GOLD_CARD_HEX "#7b5d04"		
 #define RED_CARD_HEX "#730a12"		
 
+// Unavailable hex values 
+#define W_CD_BLUE_HEX "#42392a"
+#define W_CD_GREY_HEX "#0b4a76"
 
 // Pixel coordinates 
 #define W_ABILITY_X 881
@@ -62,9 +66,3 @@ class LeagueProgram {
 		void operator () (); 				// Overload the () operator
 };
 #endif
-
-
-
-
-
-
