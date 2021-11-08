@@ -105,7 +105,7 @@ bool LeagueProgram::abilityAvaiablity(const char card) {
 		hex_color = rgb2hex(R, G, B); 
 
 		// Compare current to expected
-		if (hex_color == W_ABILITY_HEX) {
+		if (hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX || hex_color == RED_CARD_HEX) {
 			ReleaseDC(NULL, dc); 
 			return true;
 		} 
@@ -162,17 +162,19 @@ bool LeagueProgram::cardSelector(const char card)  {
 	if (hex_color != W_ABILITY_HEX && hex_color != BLUE_CARD_HEX && hex_color != GOLD_CARD_HEX && hex_color != RED_CARD_HEX) {
 		cout << "The w ability is not avaialble! - no action taken!" << endl; 
 
-		// Create lambda thread to constantly check for card availability // 
-		// ?????????????????????????????????????????????????????????????? //
-		// Create lambda thread to constantly check for card availability // 
-
+		// Create lambda thread to constantly check for card availability // This check can be removed since we check before coming into this function 
 
 		ReleaseDC(NULL, dc);
 		return false; 
 	}
 
+	// 	Start a timer to avoid infinite loop 
+	auto start_timer = std::chrono::high_resolution_clock::now(); 
+	std::chrono::duration<double> difference;
+	cout << "Timer started!" << endl;
+
 	// While the card is chooseable 
-	while (hex_color == W_ABILITY_HEX || hex_color == BLUE_CARD_HEX || hex_color == GOLD_CARD_HEX || hex_color == RED_CARD_HEX) {
+	while ((hex_color != W_CD_BLUE_HEX || hex_color != W_CD_GREY_HEX) && difference.count() < 7.0) {
 		cout << "The w ability is available! " << endl;
 		cout << "Current card hex color: [" << hex_color << "]" << endl; 
 		// Get the current color of pixel 
@@ -191,10 +193,10 @@ bool LeagueProgram::cardSelector(const char card)  {
 				// Evalaute pixel color 
 				hex_color = rgb2hex(R, G, B); 
 				cout << "Checking for blue card!" << endl; 
-
+				cout << "Current card hex color: [" << hex_color << "] blue card expected hex: [" << BLUE_CARD_HEX << "]" << endl; 
 				// Make sure the current card is Blue 
 				if (hex_color == BLUE_CARD_HEX) {
-					cout << "Current card hex color: [" << hex_color << "] lue card expected hex: [" << BLUE_CARD_HEX << "]" << endl; 
+					//cout << "Current card hex color: [" << hex_color << "] blue card expected hex: [" << BLUE_CARD_HEX << "]" << endl; 
 					
 					// Press the W key 
 					vkey = 0x57; 
@@ -214,10 +216,10 @@ bool LeagueProgram::cardSelector(const char card)  {
 				// Evalaute pixel color 
 				hex_color = rgb2hex(R, G, B); 
 				cout << "Checking for red card!" << endl; 
+				cout << "Current card hex color: [" << hex_color << "] red card expected hex: [" << RED_CARD_HEX << "]" << endl; 
 
 				// Make sure the current card is Blue 
 				if (hex_color == RED_CARD_HEX ) {
-					cout << "Current card hex color: [" << hex_color << "] lue card expected hex: [" << RED_CARD_HEX << "]" << endl; 
 					
 					// Press the W key 
 					vkey = 0x57; 
@@ -237,10 +239,10 @@ bool LeagueProgram::cardSelector(const char card)  {
 				// Evalaute pixel color 
 				hex_color = rgb2hex(R, G, B); 
 				cout << "Checking for gold card!" << endl; 
+				cout << "Current card hex color: [" << hex_color << "] gold card expected hex: [" << GOLD_CARD_HEX << "]" << endl; 
 
 				// Make sure the current card is Blue 
 				if (hex_color == GOLD_CARD_HEX ) {
-					cout << "Current card hex color: [" << hex_color << "] lue card expected hex: [" << GOLD_CARD_HEX << "]" << endl; 
 					
 					// Press the W key 
 					vkey = 0x57; 
@@ -261,6 +263,12 @@ bool LeagueProgram::cardSelector(const char card)  {
 				cout << "Card not matched to a candidate - did you specify b/r/g ?" << endl;
 				break; 
 		}
+
+		// Update countdown 
+		auto stop_timer = std::chrono::high_resolution_clock::now(); 
+		difference = chrono::duration_cast<chrono::duration<double>>(stop_timer - start_timer);
+		//cout << "Timer: " << setprecision(2) << fixed << showpoint << difference.count() << "/7.0 seconds!" << endl; 
+					
 	}
 	
 	cout << "End of cardSelector() reached ... this is not good :-(" << endl; 
